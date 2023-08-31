@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <vector>
 #include <iostream>
+#include <list>
 
 #include "draw.h"
 #include "model.h"
@@ -8,7 +9,7 @@
 
 
 void setPix(int x, int y, Color color, HDC hDC, int width, int height) {
-    SetPixel(hDC, width - x, height - y, RGB(color.r, color.g, color.b));
+    SetPixel(hDC, width - x + 300, height - y, RGB(color.r, color.g, color.b));
 }
 
 void line(int x0, int y0, int x1, int y1, Color color, HDC hDC, int width, int height) {
@@ -61,8 +62,44 @@ void triangle(Vec2i t0, Vec2i t1, Vec2i t2, Color color, HDC hDC, int width, int
 }
 
 void render(Model* model, int width, int height, Vec3f light_vector, float ambient_light, Color model_color, int mode, HDC hDC) {
+    std::vector<float> zbuffer(model->nfaces(), 0);
+    std::vector<int> facebuffer(model->nfaces(), 0);
+
     for (int i = 0; i < model->nfaces(); i++) {
         std::vector<int> face = model->face(i);
+
+        Vec2i screen_coords[3];
+        Vec3f world_coords[3];
+
+        for (int j = 0; j < 3; j++) {
+            Vec3f v = model->vert(face[j]);
+            world_coords[j] = v;
+        }
+
+        float zcoord = world_coords[0].z + world_coords[1].z + world_coords[1].z / 3;
+        zbuffer[i] = zcoord;
+    }
+    for (int i = 0; i < model->nfaces(); i++) { facebuffer[i] = i; }
+
+
+    int zbuffer_lenght = zbuffer.size();
+
+    while (zbuffer_lenght != 0) {
+        int max_index = 0;
+        for (int i = 1; i < zbuffer_lenght; i++) {
+            if (zbuffer[i - 1] > zbuffer[i]) {
+                std::swap(zbuffer[i], zbuffer[i - 1]);
+                std::swap(facebuffer[i], facebuffer[i - 1]);
+
+                max_index = i;
+            }
+        }
+
+        zbuffer_lenght = max_index;
+    }
+
+    for (int i = 0; i < model->nfaces(); i++) {
+        std::vector<int> face = model->face(facebuffer[i]);
 
         Vec2i screen_coords[3];
         Vec3f world_coords[3];
