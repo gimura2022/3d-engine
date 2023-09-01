@@ -129,13 +129,17 @@
   <ItemGroup>
     <ClCompile Include="draw.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="math.cpp" />
     <ClCompile Include="model.cpp" />
+    <ClCompile Include="polygon.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="color.h" />
     <ClInclude Include="draw.h" />
     <ClInclude Include="geometry.h" />
+    <ClInclude Include="math.h" />
     <ClInclude Include="model.h" />
+    <ClInclude Include="polygon.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

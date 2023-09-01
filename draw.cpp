@@ -6,6 +6,8 @@
 #include "draw.h"
 #include "model.h"
 #include "color.h"
+#include "math.h"
+#include "polygon.h"
 
 
 void setPix(int x, int y, Color color, HDC hDC, int width, int height) {
@@ -61,45 +63,23 @@ void triangle(Vec2i t0, Vec2i t1, Vec2i t2, Color color, HDC hDC, int width, int
     }
 }
 
-void render(Model* model, int width, int height, Vec3f light_vector, float ambient_light, Color model_color, int mode, HDC hDC) {
-    std::vector<float> zbuffer(model->nfaces(), 0);
-    std::vector<int> facebuffer(model->nfaces(), 0);
+void rasteraze(std::vector<Polygon3D>& zbuffer, HDC hDC, int width, int height) {
+    for (int i = 0; i < zbuffer.size(); i++) {
+        triangle(
+            Vec2i(zbuffer[i].p1.x, zbuffer[i].p1.y),
+            Vec2i(zbuffer[i].p2.x, zbuffer[i].p2.y),
+            Vec2i(zbuffer[i].p3.x, zbuffer[i].p3.y),
+            zbuffer[i].color,
+            hDC,
+            width,
+            height
+        );
+    }
+}
 
+void render(Model* model, int width, int height, Vec3f light_vector, float ambient_light, Color model_color, int mode, HDC hDC, std::vector<Polygon3D>& zbuffer) {
     for (int i = 0; i < model->nfaces(); i++) {
         std::vector<int> face = model->face(i);
-
-        Vec2i screen_coords[3];
-        Vec3f world_coords[3];
-
-        for (int j = 0; j < 3; j++) {
-            Vec3f v = model->vert(face[j]);
-            world_coords[j] = v;
-        }
-
-        float zcoord = world_coords[0].z + world_coords[1].z + world_coords[1].z / 3;
-        zbuffer[i] = zcoord;
-    }
-    for (int i = 0; i < model->nfaces(); i++) { facebuffer[i] = i; }
-
-
-    int zbuffer_lenght = zbuffer.size();
-
-    while (zbuffer_lenght != 0) {
-        int max_index = 0;
-        for (int i = 1; i < zbuffer_lenght; i++) {
-            if (zbuffer[i - 1] > zbuffer[i]) {
-                std::swap(zbuffer[i], zbuffer[i - 1]);
-                std::swap(facebuffer[i], facebuffer[i - 1]);
-
-                max_index = i;
-            }
-        }
-
-        zbuffer_lenght = max_index;
-    }
-
-    for (int i = 0; i < model->nfaces(); i++) {
-        std::vector<int> face = model->face(facebuffer[i]);
 
         Vec2i screen_coords[3];
         Vec3f world_coords[3];
@@ -125,7 +105,19 @@ void render(Model* model, int width, int height, Vec3f light_vector, float ambie
                 model_color.b * scal
             );
 
-            triangle(screen_coords[0], screen_coords[1], screen_coords[2], color, hDC, width, height);
+            if (mode == 1) {
+                color = Color(
+                    rand() % 255,
+                    rand() % 255,
+                    rand() % 255
+                );
+            }
+
+            Vec3f screen_coord_0 = Vec3f(screen_coords[0].x, screen_coords[0].y, 0);
+            Vec3f screen_coord_1 = Vec3f(screen_coords[1].x, screen_coords[1].y, 0);
+            Vec3f screen_coord_2 = Vec3f(screen_coords[2].x, screen_coords[2].y, 0);
+
+            add_polygon_to_buffer(zbuffer, Polygon3D(screen_coord_0, screen_coord_1, screen_coord_2, color));
         }
         else {
             for (int j = 0; j < 3; j++) {
@@ -143,4 +135,6 @@ void render(Model* model, int width, int height, Vec3f light_vector, float ambie
             }
         }
     }
+
+    rasteraze(zbuffer, hDC, width, height);
 }
