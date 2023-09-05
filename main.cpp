@@ -8,7 +8,7 @@
 #include "draw.h"
 #include "color.h"
 
-const char* path_to_model = "obj/african_head.obj";
+const char* path_to_model = "obj/player.obj";
 
 const Vec3f light_vector = Vec3f(0, 0, 1);
 const float ambient_light = 0.3f;

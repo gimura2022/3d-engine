@@ -1,7 +1,6 @@
 #include <windows.h>
 #include <vector>
 #include <iostream>
-#include <list>
 
 #include "draw.h"
 #include "model.h"
@@ -80,7 +79,6 @@ void render(Model* model, int width, int height, Vec3f light_vector, float ambie
         zbuffer[i] = zcoord;
     }
     for (int i = 0; i < model->nfaces(); i++) { facebuffer[i] = i; }
-
 
     int zbuffer_lenght = zbuffer.size();
 

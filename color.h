@@ -13,6 +13,12 @@ struct Color
 		raw[2] = color;
 		raw[3] = 255;
 	}
+	Color(int color, int a_) : r(color), g(color), b(color), a(a_) {
+		raw[0] = color;
+		raw[1] = color;
+		raw[2] = color;
+		raw[3] = a;
+	}
 	Color(int r_, int g_, int b_) : r(r_), g(g_), b(b_), a(255) {
 		raw[0] = r;
 		raw[1] = g;
